@@ -1,0 +1,16 @@
+Notes for Assignment 2:
+1) command interpreter will have a prompt : $>
+2) will be able to exit with "exit" or ctrl-d
+3) unix redirection symbols may be used
+4) must be able to run any program or unix command from the working directory of the CLI
+5) must implement exit, cd, pwd (internal)
+Listf
+- must be in alphabetical order without attention to case
+- if no directory specified, list current directory contents
+- will be an external program which is run by a child of the CLI process
+calc
+- simple calculator takes single arithmetic operations from stdi and writes the formatted expression to stdout
+- handles integers
+- addition, subtraction mutliplication (*) and division (/)
+- external program
+- must be possible to run calc and listf regardless of current working directory
