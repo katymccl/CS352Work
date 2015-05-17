@@ -27,7 +27,10 @@ int main(){
 
 
 	while (scanf("%d %c%d", &num1, &op, &num2) != EOF){
-		calculate (num1, op, num2);
+		if (op == '+' || op =='-' || op == '/' || op == '*'){
+				calculate (num1, op, num2);
+		}
+		
 	}
 	if (feof(stdin)){
 		#if DEBUG

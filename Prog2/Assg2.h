@@ -31,4 +31,5 @@ int calc();
 
 static char currentWD[1024];
 static char *user;
+
 typedef enum {false, true} bool;

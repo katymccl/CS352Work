@@ -15,3 +15,5 @@
 
 int main();
 int calculate (int num1, char op, int num2);
+
+int isnumeric(char *str);

@@ -13,13 +13,15 @@
 #include <signal.h>
 #include "calc.h"
 #include "Assg2.h"
+#include <curses.h>
+ 
 
 
 //extern char** environ;
 /* custom versions of exit, cd, and pwd*/
 
 char *customNames[] = {
-	"cwd",
+	"cd",
 	"pwd",
 	"exit"
 };
@@ -30,6 +32,9 @@ int (*customFunc[]) (char **) = {
 	&k_exit
 };
 
+char **history ;
+int numCommands = 0; 
+
 int main(){
 
 	user = getenv("USER"); /* gets the current user for the session*/
@@ -37,7 +42,7 @@ int main(){
    		#if DEBUG
        		fprintf(stdout, "Starting in %s\n", currentWD);
    		#endif
-   }
+   	}
    	else{
        perror("getcwd() error");
 	}
@@ -76,6 +81,7 @@ int main(){
 
 char *readLine(){
 	char *buf = malloc(sizeof(char) * BUF_SIZE);
+
 	if (!buf){
 		fprintf(stderr, "Error in malloc\n");
 		exit(EXIT_FAILURE);
@@ -83,19 +89,6 @@ char *readLine(){
 	if (fgets(buf, BUF_SIZE, stdin) != NULL){ /* gets one line*/
 		return strtok(buf, "\n");
 	} 
-	/*
-	if (feof(stdin)){
-		#if DEBUG
-			fprintf(stderr, "End of File reached!\n");
-		#endif
-		fclose(stdin);
-	}
-	else{
-		#if DEBUG
-		fprintf(stderr, "Error! End of file not reached\n");
-		#endif
-		fclose(stdin);
-	}*/
 
 	return NULL;
 }
@@ -144,7 +137,9 @@ int parseArgs(char **args){
 int runExternalCommands(char **args){
 	pid_t pid;
 	int status;
+
 	pid = fork();
+
 	
 	char *command = args[0]; /* command */
 
@@ -152,17 +147,19 @@ int runExternalCommands(char **args){
 		fprintf(stderr, "Error: fork failed\n");
 		return 1;
 	}else if (pid == 0){
-		puts(command);
 		if (strcmp(command, "calc") == 0){
 			command = strcat(currentWD, "/calc");
 		}
 		if (strcmp (command, "listf")  == 0){
 			command = strcat(currentWD, "/listf");
+			/* parse list f arguments here */
+			/* run list f*/
 		}
 		if (execvp(command, args) == -1){
-			puts(command);
-			puts(args[1]);
-			perror("Error with external functions (possible mispelling of built-in ?)");
+		 	perror("Error: Command Not Found");
+		 	#if DEBUG
+		 	fprintf(stderr, "command: %s\n", command);
+		 	#endif
 		}
 		exit(EXIT_FAILURE);
 	}
@@ -189,6 +186,8 @@ int k_pwd (char **args){
 	return 1;
 }
 
+
+
 /* function: k_cwd
  * returns 1 on success */
 int k_cwd(char **args){
@@ -201,7 +200,7 @@ int k_cwd(char **args){
 
 	if (args[1] == NULL){
 		#if DEBUG
-			perror("No valid directory given. Change to default.");
+			perror("No directory given. Changing to default.");
 		#endif
 
 		if (chdir(home) !=0){
@@ -221,7 +220,6 @@ int k_cwd(char **args){
 
 
    if (	getcwd(current, sizeof(current)) != NULL){
-   		puts(current);
 	   	#if DEBUG
 	       fprintf(stdout, "cwd changed to %s\n", current);
 	   	#endif
