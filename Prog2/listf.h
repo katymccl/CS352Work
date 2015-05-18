@@ -21,7 +21,6 @@ static char currentWD[1024];
 #define MAXDIR 25
 
 int main();
-//int compareDir(const void *v1, const void *v2);
 int compareDir ( const struct dirent **a, const struct dirent **b);
 int entriesFilter(const struct dirent *entry);
 char *getPermissions(mode_t mode);

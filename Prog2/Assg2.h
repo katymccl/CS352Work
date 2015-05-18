@@ -1,7 +1,7 @@
 /*
 	Assg2.h
 	Author: Kathryn McClintic
-	Last modified: May 4th, 2015
+	Last modified: May 17th, 2015
 	Purpose: header file for Assg2.c
 */
 
@@ -14,6 +14,9 @@
 #define BUF_SIZE 1024
 #define TOKEN_DELIM " "
 #define numCustom 3
+
+#define STDOUT 1
+#define STDIN 0
 
 int (*customFunc[3]) (char **);
 int k_exit(char** args);

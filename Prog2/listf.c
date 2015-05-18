@@ -1,7 +1,7 @@
 /*
 	listf.c
 	Author: Kathryn McClintic
-	Last modified: May 11th, 2015
+	Last modified: May 17th, 2015
 	Purpose: implements  a custom ls unix command with additional features
 */
 #include <stdio.h>
@@ -21,6 +21,7 @@
 #include "listf.h"
 
 
+/* Profile for listf flags */
 typedef struct{
 	bool l; /* long */
 	bool a; /* access time */
@@ -28,6 +29,7 @@ typedef struct{
 	bool c; /* creation time */
 }Profile;
 
+/* Main ls loop */
 int main(int argc, char **argv){
 	int i = 0;
 	int j = 0;	
@@ -36,6 +38,7 @@ int main(int argc, char **argv){
 	int numEntries = 0;
 	char *flag;
 
+	/* data structures for ls info */
 	struct tm timeInfo;
 	char timeBuffer[BUF_SIZE];
 
@@ -48,18 +51,15 @@ int main(int argc, char **argv){
 	char buf[256];
 
 	struct dirent **entries; /* an array of structs of directory entries */
-	char *dir[MAXDIR];
+	char *dir[MAXDIR]; 
 	Profile list_prof = {false,false,false,false}; 
 
-	if (getcwd(currentWD, sizeof(currentWD)) != NULL){
-   		#if DEBUG
-       		fprintf(stdout, "current wd is %s\n", currentWD);
-   		#endif
+	if (getcwd(currentWD, sizeof(currentWD)) == NULL){
+		perror("getcwd() error");
    	}
-   	else{
-       perror("getcwd() error");
-	}
+ 
 
+	/* Parse flags */
 	for (j = 1; j < argc; j++){
 		if(strstr (argv[j], "-")){
 			flag = strstr (argv[j], "-");
@@ -87,7 +87,11 @@ int main(int argc, char **argv){
 		else{
 			dir[i] = malloc(BUF_SIZE);
 			if (argv[j][0] != '/'){
+				/* support for relative path */
 				sprintf(dir[i], "%s/%s", currentWD,argv[j]);
+			}
+			else{
+				sprintf(dir[i], "%s",argv[j]);
 			}
 			i++;			
 		}
@@ -98,19 +102,20 @@ int main(int argc, char **argv){
 		i = 1;
 	}
 	if (!list_prof.c && !list_prof.a && !list_prof.m){
-		list_prof.m = true;
+		list_prof.m = true; /* setting default -m option */
 	}
 
 
+	/* Iterate through directory */
 	for (k = 0; k < i; k++){
-		chdir(dir[k]);
+		chdir(dir[k]); /* to use stat function */
 		numEntries = scandir (dir[k], &entries, entriesFilter, compareDir);
 		#if DEBUG
 			fprintf(stdout, "%d entries found\n", numEntries);
 		#endif
 		for (j = 0; j < numEntries; j++){
-			#if DEBUG
 			if(list_prof.l){
+				/* printing out times and permissions */
 				if (stat(entries[j]->d_name, &data) == 0){
 					fprintf(stdout, "%s %d ", getPermissions(data.st_mode), (int) data.st_nlink);
 					if (!getpwuid_r(data.st_uid, &pswd, buf, sizeof(buf), &ownerData)){
@@ -150,49 +155,55 @@ int main(int argc, char **argv){
 			else{
 				fprintf(stdout, " %s", entries[j]->d_name);
 			}
-			#endif
 		}
 		fprintf(stdout,"\n");
 	}
-
 	return 1;
 }
 
+/* compareDir 
+ * sorts directory entries alphabetically 
+ * to be used in scandir as a sort function parameter */
 int compareDir ( const struct dirent **a, const struct dirent **b)
 {
   return strcasecmp ((*a)->d_name,(*b)->d_name);
 }
+
+/* entriesFiler
+ * gets rid of hidden files from directory list 
+ * to be used in scandir as a filter function parameter */
 int entriesFilter(const struct dirent *entry){
 	return entry->d_name[0] != '.';
 }
 
+/* getPermissions
+ * retrieve permission bits from mode */
 char *getPermissions(mode_t mode){
-  
-  char *permissions = malloc(BUF_SIZE);
 
-  char fileType = 'o';
-  if (S_ISREG(mode)){
-  	fileType = '-';  
-  }
-  if (S_ISLNK(mode)){
-  	fileType = 'l';  
-  }
-  if (S_ISDIR(mode)){
-  	fileType = 'd';  
-  }
+	char *permissions = malloc(BUF_SIZE);
 
-  
-  sprintf(permissions, "%c%c%c%c%c%c%c%c%c%c", fileType,  
-  mode & S_IRUSR ? 'r' : '-',  
-  mode & S_IWUSR ? 'w' : '-',  
-  mode & S_IXUSR ? 'x' : '-',  
-  mode & S_IRGRP ? 'r' : '-',  
-  mode & S_IWGRP ? 'w' : '-',  
-  mode & S_IXGRP ? 'x' : '-',  
-  mode & S_IROTH ? 'r' : '-',  
-  mode & S_IWOTH ? 'w' : '-',  
-  mode & S_IXOTH ? 'x' : '-');
+	char fileType = 'o';
+	if (S_ISREG(mode)){
+		fileType = '-';  
+	}
+	if (S_ISLNK(mode)){
+		fileType = 'l';  
+	}
+	if (S_ISDIR(mode)){
+		fileType = 'd';  
+	}
 
-  return permissions;  
+	sprintf(permissions, "%c%c%c%c%c%c%c%c%c%c", fileType,  
+	mode & S_IRUSR ? 'r' : '-',  
+	mode & S_IWUSR ? 'w' : '-',  
+	mode & S_IXUSR ? 'x' : '-',  
+	mode & S_IRGRP ? 'r' : '-',  
+	mode & S_IWGRP ? 'w' : '-',  
+	mode & S_IXGRP ? 'x' : '-',  
+	mode & S_IROTH ? 'r' : '-',  
+	mode & S_IWOTH ? 'w' : '-',  
+	mode & S_IXOTH ? 'x' : '-');
+
+	return permissions;  
 
 }

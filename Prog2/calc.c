@@ -1,7 +1,7 @@
 /*
 	calc.c
 	Author: Kathryn McClintic
-	Last modified: May 4th, 2015
+	Last modified: May 17th, 2015
 	Purpose: calculator file 
 */
 #include <stdio.h>
@@ -11,43 +11,26 @@
 #include <unistd.h>
 #include "calc.h"
 
-
-/* TO DO:
-do the whole ./calc thing
-get ctrl d working
-*/
 int main(){
-	#if DEBUG
-	fprintf(stdout,"Welcome to the coolest calculator on earth\n");
-	#endif
 	int num1 = 0;
 	char op = '+';
 	int num2 = 0;
 
-
-
+	/*getting input and calls calculate 
+	 * Will only work if number, operator, number is entered */
+	
 	while (scanf("%d %c%d", &num1, &op, &num2) != EOF){
 		if (op == '+' || op =='-' || op == '/' || op == '*'){
 				calculate (num1, op, num2);
 		}
 		
 	}
-	if (feof(stdin)){
-		#if DEBUG
-		/*End of File reached */
-		fprintf(stderr, "Closing calculator. Goodbye!\n");
-		#endif
-		fclose(stdin);
-	}
-	else{
-		#if DEBUG
-		fprintf(stderr, "Error! End of file not reached\n");
-		#endif
-		fclose(stdin);
-	}
 	return 0; 
-
 }
+
+/* calculate
+ * takes a num1, character operation, and num2
+ * performs  operation. */
 int calculate (int num1, char op, int num2){
 	int answer; 
 
@@ -74,7 +57,7 @@ int calculate (int num1, char op, int num2){
 		case '/':
 		if (num2 == 0){
 			#if DEBUG
-			fprintf(stderr, "Cannot divide by 0!\n");
+			fprintf(stdout, "Cannot divide by 0!\n");
 			#endif
 			break;
 		}
